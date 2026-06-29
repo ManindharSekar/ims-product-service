@@ -3,6 +3,7 @@ package com.ims.product.api;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ims.product.dto.ProductDTO;
 import com.ims.product.entity.Product;
 import com.ims.product.service.ProductService;
 
@@ -27,15 +29,22 @@ public class ProductApi {
 	
 	private final ProductService productService;
 	
+	private final ModelMapper modelMapper;
+	
+	
 	@PostMapping("/create")
-	public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
-		Product createdProduct = productService.createProduct(product);
-		return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
+	public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
+		Product productEntity = modelMapper.map(productDTO, Product.class);
+		Product createdProduct = productService.createProduct(productEntity);
+		ProductDTO createdProductDTO = modelMapper.map(createdProduct, ProductDTO.class);
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdProductDTO);
 	}
 	
 	@GetMapping("/{id}")
-	public ResponseEntity<Product> getProductById(@PathVariable("id") Long id) {
-		return ResponseEntity.ok(productService.getProductById(id));
+	public ResponseEntity<ProductDTO> getProductById(@PathVariable("id") Long id) {
+		Product product = productService.getProductById(id);
+		ProductDTO dto = modelMapper.map(product, ProductDTO.class);
+		return ResponseEntity.ok(dto);
 	}
 	
 	@DeleteMapping("/{id}")
@@ -45,22 +54,20 @@ public class ProductApi {
 	}
 	
 	@PutMapping("/{id}")
-	public ResponseEntity<Product> updateProduct(@PathVariable("id") Long id, @RequestBody Product product) {
+	public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") Long id,@Valid @RequestBody ProductDTO productDTO) {
 		Product existingProduct = productService.getProductById(id);
-		existingProduct.setName(product.getName());
-		existingProduct.setSku(product.getSku());
-		existingProduct.setPrice(product.getPrice());
-		existingProduct.setCategoryId(product.getCategoryId());
-		existingProduct.setSupplierId(product.getSupplierId());
+		modelMapper.map(productDTO, existingProduct);
+		existingProduct.setId(id);
 		Product updatedProduct = productService.createProduct(existingProduct);
-		return ResponseEntity.ok(updatedProduct);
+		ProductDTO updatedDTO = modelMapper.map(updatedProduct, ProductDTO.class);
+		return ResponseEntity.ok(updatedDTO);
+		
 	}
 	
-	@GetMapping()
-	public ResponseEntity<Iterable<Product>> getAllProducts() {
-		
-		List allProducts = productService.getAllProducts();
-		return ResponseEntity.ok(allProducts);
+	@GetMapping() 
+	public ResponseEntity<List<ProductDTO>> getAllProducts() {
+		List<ProductDTO> products = productService.getAllProducts();
+		return ResponseEntity.ok(products);
 	}
 
 }

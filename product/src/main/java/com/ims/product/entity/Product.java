@@ -30,7 +30,9 @@ public class Product {
 	@Positive(message = "Price must be greater than zero")
 	private BigDecimal price;
 	
-	private Long categoryId;
+	@ManyToOne(cascade=CascadeType.ALL)
+	@JoinColumn(name = "category_id")
+	private Category categoryId;
 	
 	private Long supplierId;
 
