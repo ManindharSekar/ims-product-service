@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import com.ims.product.entity.Product;
+import com.ims.product.exception.ResourceNotFoundException;
 import com.ims.product.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class ProductService {
 
 	public Product getProductById(Long id) {
 		// TODO Auto-generated method stub
-		return  productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found with id: " + id));
+		return  productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 		
 	}
 

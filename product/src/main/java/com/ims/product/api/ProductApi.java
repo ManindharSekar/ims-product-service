@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ims.product.entity.Product;
 import com.ims.product.service.ProductService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -27,7 +28,7 @@ public class ProductApi {
 	private final ProductService productService;
 	
 	@PostMapping("/create")
-	public ResponseEntity<Product> createProduct(@RequestBody Product product) {
+	public ResponseEntity<Product> createProduct(@Valid @RequestBody Product product) {
 		Product createdProduct = productService.createProduct(product);
 		return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
 	}
