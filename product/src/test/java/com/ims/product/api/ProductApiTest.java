@@ -1,7 +1,6 @@
 package com.ims.product.api;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -16,7 +15,6 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -25,115 +23,75 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ims.product.dto.ProductDTO;
-import com.ims.product.entity.Product;
 import com.ims.product.service.ProductService;
 
 @WebMvcTest(ProductApi.class)
 class ProductApiTest {
 
-    @Autowired
-    private MockMvc mockMvc;
+	@Autowired
+	private MockMvc mockMvc;
 
-    @MockitoBean
-    private ProductService productService;
+	@MockitoBean
+	private ProductService productService;
 
-    @MockitoBean
-    private ModelMapper modelMapper;
+	private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private Product product;
-    
-    private ProductDTO productDTO;
-    
-    private final ObjectMapper objectMapper = new ObjectMapper();
+	private ProductDTO productDTO;
 
-    @BeforeEach
-    void setup() {
+	@BeforeEach
+	void setUp() {
 
-        product = new Product();
-        product.setId(1L);
-        product.setName("Laptop");
-        product.setSku("L123456");
-        product.setPrice(50000);
+		productDTO = new ProductDTO();
+		productDTO.setId(1L);
+		productDTO.setName("Laptop");
+		productDTO.setSku("L123456");
+		productDTO.setPrice(50000);
+	}
 
-        productDTO = new ProductDTO();
-        productDTO.setId(1L);
-        productDTO.setName("Laptop");
-        productDTO.setSku("L123456");
-        productDTO.setPrice(50000);
-    }
+	@DisplayName("Create Product Successfully")
+	@Test
+	void createProduct_ShouldReturnCreated() throws Exception {
 
-    @DisplayName("Create Product Successfully")
-    @Test
-    void createProduct_ShouldReturnCreated() throws Exception {
+		when(productService.createProduct(any(ProductDTO.class))).thenReturn(productDTO);
 
-        when(modelMapper.map(any(ProductDTO.class), eq(Product.class)))
-                .thenReturn(product);
+		mockMvc.perform(post("/products/create").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(productDTO))).andExpect(status().isCreated())
+				.andExpect(jsonPath("$.id").value(1)).andExpect(jsonPath("$.name").value("Laptop"));
+	}
 
-        when(productService.createProduct(any(Product.class)))
-                .thenReturn(product);
+	@Test
+	void getProductById_ShouldReturnProduct() throws Exception {
 
-        when(modelMapper.map(any(Product.class), eq(ProductDTO.class)))
-                .thenReturn(productDTO);
+		when(productService.getProductById(1L)).thenReturn(productDTO);
 
-        mockMvc.perform(post("/products/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(productDTO)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Laptop"));
-    }
+		mockMvc.perform(get("/products/1")).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1))
+				.andExpect(jsonPath("$.name").value("Laptop"));
+	}
 
-    @Test
-    void getProductById_ShouldReturnProduct() throws Exception {
+	@Test
+	void updateProduct_ShouldReturnUpdatedProduct() throws Exception {
 
-        when(productService.getProductById(1L)).thenReturn(product);
+		when(productService.updateProduct(any(Long.class), any(ProductDTO.class))).thenReturn(productDTO);
 
-        when(modelMapper.map(product, ProductDTO.class))
-                .thenReturn(productDTO);
+		mockMvc.perform(put("/products/1").contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(productDTO))).andExpect(status().isOk())
+				.andExpect(jsonPath("$.id").value(1)).andExpect(jsonPath("$.name").value("Laptop"));
+	}
 
-        mockMvc.perform(get("/products/1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.name").value("Laptop"));
-    }
+	@Test
+	void deleteProduct_ShouldReturnNoContent() throws Exception {
 
-    @Test
-    void updateProduct_ShouldReturnUpdatedProduct() throws Exception {
+		doNothing().when(productService).deleteProductById(1L);
 
-        when(productService.getProductById(1L))
-                .thenReturn(product);
+		mockMvc.perform(delete("/products/1")).andExpect(status().isNoContent());
+	}
 
-        when(productService.createProduct(any(Product.class)))
-                .thenReturn(product);
+	@Test
+	void getAllProducts_ShouldReturnList() throws Exception {
 
-        when(modelMapper.map(any(Product.class), eq(ProductDTO.class)))
-                .thenReturn(productDTO);
+		when(productService.getAllProducts()).thenReturn(List.of(productDTO));
 
-        mockMvc.perform(put("/products/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(productDTO)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1));
-    }
-
-    @Test
-    void deleteProduct_ShouldReturnNoContent() throws Exception {
-
-        doNothing().when(productService).deleteProductById(1L);
-
-        mockMvc.perform(delete("/products/1"))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void getAllProducts_ShouldReturnList() throws Exception {
-
-        when(productService.getAllProducts())
-                .thenReturn(List.of(productDTO));
-
-        mockMvc.perform(get("/products/"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].name").value("Laptop"));
-    }
+		mockMvc.perform(get("/products/")).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(1))
+				.andExpect(jsonPath("$[0].name").value("Laptop"));
+	}
 }

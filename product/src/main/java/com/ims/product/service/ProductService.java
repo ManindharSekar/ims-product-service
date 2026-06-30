@@ -2,38 +2,50 @@ package com.ims.product.service;
 
 import java.util.List;
 
-import org.jspecify.annotations.Nullable;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.ims.product.dto.ProductDTO;
 import com.ims.product.entity.Product;
+import com.ims.product.exception.DuplicateResourceException;
 import com.ims.product.exception.ResourceNotFoundException;
 import com.ims.product.repository.ProductRepository;
 
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ProductService {
 	
 	private final ProductRepository productRepository;
 	
+	private final ModelMapper modelMapper;
+	
 	private static final Logger log = LoggerFactory.getLogger(ProductService.class);
 
-	public Product createProduct(Product product) {
+	public ProductDTO createProduct(@Valid ProductDTO productDTO) {
 		// TODO Auto-generated method stub
-		log.info("Creating product");
-		Product savedProduct = productRepository.save(product);
-		log.info("Product created with ID: {}", savedProduct.getId());
-		return savedProduct;
+		log.info("Creating product with SKU {}", productDTO.getSku());
+		if(productRepository.existsBySku(productDTO.getSku())){
+		    throw new DuplicateResourceException("SKU already exists");
+		}
+		Product productEntity = modelMapper.map(productDTO, Product.class);
+		Product savedProduct = productRepository.save(productEntity);
+		log.info("Product created successfully. Id={}", savedProduct.getId());
+		return modelMapper.map(savedProduct, ProductDTO.class);
 	}
-
-	public Product getProductById(Long id) {
+	
+	public ProductDTO getProductById(Long id) {
 		// TODO Auto-generated method stub
-		return  productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+		Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+		return modelMapper.map(product, ProductDTO.class);
 		
 	}
 
@@ -43,9 +55,19 @@ public class ProductService {
 		
 	}
 
-	public List getAllProducts() {
+
+	public List<ProductDTO> getAllProducts() {
+		return productRepository.findAll().stream().map(product -> modelMapper.map(product, ProductDTO.class)).toList();
+	}
+	
+
+	public ProductDTO updateProduct(Long id, @Valid ProductDTO productDTO) {
 		// TODO Auto-generated method stub
-		return productRepository.findAll();
+		Product existingProduct = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+		Product productEntity = modelMapper.map(productDTO, Product.class);
+		productEntity.setId(existingProduct.getId());
+		Product savedProduct = productRepository.save(productEntity);
+		return modelMapper.map(savedProduct, ProductDTO.class);
 	}
 
 }

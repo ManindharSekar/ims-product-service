@@ -2,8 +2,6 @@ package com.ims.product.api;
 
 import java.util.List;
 
-import org.jspecify.annotations.Nullable;
-import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ims.product.dto.ProductDTO;
-import com.ims.product.entity.Product;
 import com.ims.product.service.ProductService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,30 +33,24 @@ public class ProductApi {
 	
 	private final ProductService productService;
 	
-	private final ModelMapper modelMapper;
-	
 	private static final Logger log = LoggerFactory.getLogger(ProductApi.class);
 	
 	@Operation(summary = "Create Product")
 	@PostMapping("/create")
 	public ResponseEntity<ProductDTO> createProduct(@Valid @RequestBody ProductDTO productDTO) {
-		log.info("Received request to create product");
-		Product productEntity = modelMapper.map(productDTO, Product.class);
-		Product createdProduct = productService.createProduct(productEntity);
-		ProductDTO createdProductDTO = modelMapper.map(createdProduct, ProductDTO.class);
-		return ResponseEntity.status(HttpStatus.CREATED).body(createdProductDTO);
+		log.info("Received request to create product");		
+		ProductDTO createdProduct = productService.createProduct(productDTO);	
+		return ResponseEntity.status(HttpStatus.CREATED).body(createdProduct);
 	}
 	 
 	@Operation(summary = "Get Product by Id")
 	@GetMapping("/{id}")
 	@ApiResponses({
 		    @ApiResponse(responseCode = "200",description = "Success"),
-		    @ApiResponse(responseCode = "404",description = "Not Found")
-		})
+		    @ApiResponse(responseCode = "404",description = "Not Found")})
 	public ResponseEntity<ProductDTO> getProductById(@PathVariable("id") Long id) {
-		Product product = productService.getProductById(id);
-		ProductDTO dto = modelMapper.map(product, ProductDTO.class);
-		return ResponseEntity.ok(dto);
+		ProductDTO productDTO = productService.getProductById(id);
+		return ResponseEntity.ok(productDTO);
 	}
 	
 	@Operation(summary = "Delete Product by Id")
@@ -72,12 +63,8 @@ public class ProductApi {
 	@Operation(summary = "Update Product by Id")
 	@PutMapping("/{id}")
 	public ResponseEntity<ProductDTO> updateProduct(@PathVariable("id") Long id,@Valid @RequestBody ProductDTO productDTO) {
-		Product existingProduct = productService.getProductById(id);
-		modelMapper.map(productDTO, existingProduct);
-		existingProduct.setId(id);
-		Product updatedProduct = productService.createProduct(existingProduct);
-		ProductDTO updatedDTO = modelMapper.map(updatedProduct, ProductDTO.class);
-		return ResponseEntity.ok(updatedDTO);
+		ProductDTO updatedProduct = productService.updateProduct(id,productDTO);
+		return ResponseEntity.ok(updatedProduct);
 		
 	}
 	

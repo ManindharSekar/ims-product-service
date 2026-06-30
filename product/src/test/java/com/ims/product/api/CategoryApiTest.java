@@ -1,7 +1,6 @@
 package com.ims.product.api;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -24,7 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ims.product.dto.CategoryDTO;
-import com.ims.product.entity.Category;
 import com.ims.product.service.CategoryService;
 
 @WebMvcTest(CategoryApi.class)
@@ -33,23 +31,18 @@ class CategoryApiTest {
 	@Autowired
 	private MockMvc mockMvc;
 
-	private final ObjectMapper objectMapper = new ObjectMapper();
-
 	@MockitoBean
 	private CategoryService categoryService;
 
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
+	private CategoryDTO categoryDTO;
+	
 	@MockitoBean
 	private ModelMapper modelMapper;
 
-	private Category category;
-	private CategoryDTO categoryDTO;
-
 	@BeforeEach
 	void setUp() {
-
-		category = new Category();
-		category.setId(1L);
-		category.setName("Electronics");
 
 		categoryDTO = new CategoryDTO();
 		categoryDTO.setId(1L);
@@ -59,11 +52,7 @@ class CategoryApiTest {
 	@Test
 	void createCategory_ShouldReturnCreatedCategory() throws Exception {
 
-		when(modelMapper.map(any(CategoryDTO.class), eq(Category.class))).thenReturn(category);
-
-		when(categoryService.createCategory(any(Category.class))).thenReturn(category);
-
-		when(modelMapper.map(any(Category.class), eq(CategoryDTO.class))).thenReturn(categoryDTO);
+		when(categoryService.createCategory(any(CategoryDTO.class))).thenReturn(categoryDTO);
 
 		mockMvc.perform(post("/category/create").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(categoryDTO))).andExpect(status().isOk())
@@ -73,9 +62,7 @@ class CategoryApiTest {
 	@Test
 	void getCategoryById_ShouldReturnCategory() throws Exception {
 
-		when(categoryService.getCategoryById(1L)).thenReturn(category);
-
-		when(modelMapper.map(category, CategoryDTO.class)).thenReturn(categoryDTO);
+		when(categoryService.getCategoryById(1L)).thenReturn(categoryDTO);
 
 		mockMvc.perform(get("/category/1")).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(1))
 				.andExpect(jsonPath("$.name").value("Electronics"));
@@ -84,11 +71,7 @@ class CategoryApiTest {
 	@Test
 	void updateCategory_ShouldReturnUpdatedCategory() throws Exception {
 
-		when(categoryService.getCategoryById(1L)).thenReturn(category);
-
-		when(categoryService.createCategory(any(Category.class))).thenReturn(category);
-
-		when(modelMapper.map(any(Category.class), eq(CategoryDTO.class))).thenReturn(categoryDTO);
+		when(categoryService.updateCategory(any(Long.class), any(CategoryDTO.class))).thenReturn(categoryDTO);
 
 		mockMvc.perform(put("/category/update/1").contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(categoryDTO))).andExpect(status().isOk())
@@ -106,7 +89,7 @@ class CategoryApiTest {
 	@Test
 	void getAllCategories_ShouldReturnCategoryList() throws Exception {
 
-		when(categoryService.getAllCategories()).thenReturn(List.of(category));
+		when(categoryService.getAllCategories()).thenReturn(List.of(categoryDTO));
 
 		mockMvc.perform(get("/category/all")).andExpect(status().isOk()).andExpect(jsonPath("$[0].id").value(1))
 				.andExpect(jsonPath("$[0].name").value("Electronics"));
