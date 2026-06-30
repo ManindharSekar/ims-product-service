@@ -15,9 +15,12 @@ import com.ims.product.dto.CategoryDTO;
 import com.ims.product.entity.Category;
 import com.ims.product.service.CategoryService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "Category")
 @RestController
 @RequestMapping("/category")
 @RequiredArgsConstructor
@@ -27,6 +30,7 @@ public class CategoryApi {
 	
 	private final ModelMapper modelMapper;
 	
+	@Operation(summary = "Create Category")
 	@PostMapping("/create")
 	public CategoryDTO createCategory(@Valid @RequestBody CategoryDTO categoryDTO) {
 		Category categoryEntity = modelMapper.map(categoryDTO, Category.class);
@@ -35,6 +39,7 @@ public class CategoryApi {
 		return createdCategoryDTO;
 	}
 	
+	@Operation(summary = "Get Category by Id")
 	@GetMapping("/{id}")
 	public CategoryDTO getCategoryById(@PathVariable("id") Long id) {
 		Category category = categoryService.getCategoryById(id);
@@ -42,12 +47,14 @@ public class CategoryApi {
 		return dto;
 	}
 	
+	@Operation(summary = "Delete Category by Id")
 	@DeleteMapping("/delete/{id}")
 	public ResponseEntity<Void> deleteCategoryById(@PathVariable("id") Long id) {
 		categoryService.deleteCategoryById(id);
 		return ResponseEntity.noContent().build();
 	}
 	
+	@Operation(summary = "Update Category by Id")
 	@PutMapping("/update/{id}")
 	public CategoryDTO updateCategory(@PathVariable("id") Long id, @Valid @RequestBody CategoryDTO categoryDTO) {
 		Category existingCategory = categoryService.getCategoryById(id);
@@ -57,6 +64,8 @@ public class CategoryApi {
 		CategoryDTO updatedCategoryDTO = modelMapper.map(updatedCategory, CategoryDTO.class);
 		return updatedCategoryDTO;
 	}
+	
+	@Operation(summary = "Get All Categories")
 	@GetMapping("/all")
 	public ResponseEntity<?> getAllCategories() {
 		return ResponseEntity.ok(categoryService.getAllCategories());
