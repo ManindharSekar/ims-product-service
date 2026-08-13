@@ -19,13 +19,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.ims.product.dto.CategoryDTO;
 import com.ims.product.entity.Category;
 import com.ims.product.exception.ResourceNotFoundException;
-import com.ims.product.repository.CategoryReposiory;
+import com.ims.product.repository.CategoryRepository;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
 
 	@Mock
-	private CategoryReposiory categoryRepository;
+	private CategoryRepository categoryRepository;
 
 	@Mock
 	private ModelMapper modelMapper;

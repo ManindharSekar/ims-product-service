@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.ims.product.dto.CategoryDTO;
 import com.ims.product.entity.Category;
 import com.ims.product.exception.ResourceNotFoundException;
-import com.ims.product.repository.CategoryReposiory;
+import com.ims.product.repository.CategoryRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class CategoryService {
 	
-	private final CategoryReposiory categoryRepository;
+	private final CategoryRepository categoryRepository;
 	
 	private final ModelMapper modelMapper;
 	
