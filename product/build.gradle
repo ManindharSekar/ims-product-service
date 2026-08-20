@@ -29,6 +29,7 @@ dependencies {
     runtimeOnly 'org.postgresql:postgresql'
 
     implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
+    implementation 'org.springframework.cloud:spring-cloud-starter-config'
 
     implementation 'org.modelmapper:modelmapper:3.1.1'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
